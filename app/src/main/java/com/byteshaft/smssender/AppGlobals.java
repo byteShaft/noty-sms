@@ -7,8 +7,12 @@ import com.google.firebase.FirebaseApp;
 
 public class AppGlobals extends Application {
 
-    private static Context sContext;
 
+    public static final String SERVER_IP = "http://192.168.1.4:8000";
+    public static final String BASE_URL = String.format("%s/api/", SERVER_IP);
+    public static final String KEY = "key";
+
+    private static Context sContext;
 
     @Override
     public void onCreate() {
