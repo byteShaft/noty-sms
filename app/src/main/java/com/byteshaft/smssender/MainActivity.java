@@ -16,15 +16,22 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         serviceSwitch = (Switch) findViewById(R.id.service_switch);
+        if (AppGlobals.isServiceOn()) {
+            serviceSwitch.setChecked(true);
+        } else {
+            serviceSwitch.setChecked(false);
+        }
         serviceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (b) {
                     System.out.println("Service ON");
-//                    sendSMS("03448797786", "OK kro");
+
                 } else {
                     System.out.println("Service off");
+
                 }
+                AppGlobals.saveState(b);
             }
         });
     }
