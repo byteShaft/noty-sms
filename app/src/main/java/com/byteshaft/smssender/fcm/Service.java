@@ -9,29 +9,39 @@ import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
+import android.telephony.SmsManager;
+import android.util.Log;
 
+import com.byteshaft.smssender.AppGlobals;
 import com.byteshaft.smssender.MainActivity;
 import com.byteshaft.smssender.R;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 
 public class Service extends FirebaseMessagingService {
+    private String message;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        System.out.println(remoteMessage.getData());
-        JSONObject jsonObject = new JSONObject(remoteMessage.getData());
-        try {
-            jsonObject.getJSONArray("numbers");
-        } catch (JSONException e) {
-            e.printStackTrace();
+        String[] numbers = remoteMessage.getData().get("numbers").replace("[", "").replace("]", "").split(",");
+        Log.i("TAG", numbers[0]);
+        message = remoteMessage.getData().get("message");
+        for (final String number : numbers) {
+            if (AppGlobals.isServiceOn()) {
+                sendSMS(number, message);
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
-        sendNotification();
+        if (AppGlobals.isServiceOn()) {
+            sendNotification();
+        }
     }
 
     private void sendNotification() {
@@ -47,7 +57,7 @@ public class Service extends FirebaseMessagingService {
                 .setLargeIcon(bm)
                 .setTicker("Noty SMS")
                 .setContentTitle("Noty SMS")
-                .setContentText("Test test test")
+                .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent);
@@ -56,5 +66,14 @@ public class Service extends FirebaseMessagingService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+    }
+
+    public void sendSMS(String phoneNo, String msg) {
+        try {
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(phoneNo, null, msg, null, null);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }
