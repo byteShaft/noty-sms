@@ -8,7 +8,7 @@ import com.google.firebase.FirebaseApp;
 public class AppGlobals extends Application {
 
 
-    public static final String SERVER_IP = "http://192.168.1.4:8000";
+    public static final String SERVER_IP = "http://34.209.111.75:8080";
     public static final String BASE_URL = String.format("%s/api/", SERVER_IP);
     public static final String KEY = "key";
 

@@ -9,14 +9,14 @@ import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.byteshaft.smssender.MainActivity;
 import com.byteshaft.smssender.R;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import static com.google.android.gms.internal.zzt.TAG;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 public class Service extends FirebaseMessagingService {
@@ -24,9 +24,12 @@ public class Service extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        // Check if message contains a notification payload.
-        if (remoteMessage.getNotification() != null) {
-            Log.e(TAG, "Message Notification Body:  " + remoteMessage.getNotification().getBody());
+        System.out.println(remoteMessage.getData());
+        JSONObject jsonObject = new JSONObject(remoteMessage.getData());
+        try {
+            jsonObject.getJSONArray("numbers");
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         sendNotification();
     }
