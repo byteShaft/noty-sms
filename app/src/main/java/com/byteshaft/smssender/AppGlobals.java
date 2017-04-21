@@ -12,7 +12,8 @@ public class AppGlobals extends Application {
     public static final String SERVER_IP = "http://34.209.111.75:8080";
     public static final String BASE_URL = String.format("%s/api/", SERVER_IP);
     public static final String KEY = "key";
-
+    public static final String KEY_TOKEN = "token";
+    public static final String KEY_FIRST_RUN = "first_run";
     private static final String SERVICE_KEY = "iServiceON";
 
     private static Context sContext;
@@ -31,6 +32,26 @@ public class AppGlobals extends Application {
 
     public static SharedPreferences getPreferenceManager() {
         return getContext().getSharedPreferences("shared_prefs", MODE_PRIVATE);
+    }
+
+    public static void saveBoolean(boolean value) {
+        SharedPreferences sharedPreferences = getPreferenceManager();
+        sharedPreferences.edit().putBoolean(AppGlobals.KEY_FIRST_RUN, value).apply();
+    }
+
+    public static boolean isRunningFirstTime() {
+        SharedPreferences sharedPreferences = getPreferenceManager();
+        return sharedPreferences.getBoolean(AppGlobals.KEY_FIRST_RUN, true);
+    }
+
+    public static void saveDataToSharedPreferences(String key, String value) {
+        SharedPreferences sharedPreferences = getPreferenceManager();
+        sharedPreferences.edit().putString(key, value).apply();
+    }
+
+    public static String getStringFromSharedPreferences(String key) {
+        SharedPreferences sharedPreferences = getPreferenceManager();
+        return sharedPreferences.getString(key, "");
     }
 
 

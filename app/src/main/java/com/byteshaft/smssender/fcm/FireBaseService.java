@@ -19,6 +19,7 @@ public class FireBaseService extends FirebaseInstanceIdService implements
     public void onTokenRefresh() {
         super.onTokenRefresh();
         String token = FirebaseInstanceId.getInstance().getToken();
+        AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_TOKEN, token);
         Log.e("TAG", "Token " + token);
         sendKey(token);
     }
