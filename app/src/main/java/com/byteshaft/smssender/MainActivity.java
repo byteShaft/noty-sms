@@ -7,20 +7,27 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 
-public class MainActivity extends AppCompatActivity {
+import com.byteshaft.requests.HttpRequest;
 
-    private Switch serviceSwitch;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.HttpURLConnection;
+
+public class MainActivity extends AppCompatActivity implements
+        HttpRequest.OnReadyStateChangeListener, HttpRequest.OnErrorListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        serviceSwitch = (Switch) findViewById(R.id.service_switch);
+        Switch serviceSwitch = (Switch) findViewById(R.id.service_switch);
         showDialog();
 //        if (AppGlobals.isRunningFirstTime()) {
 //            showDialog();
@@ -46,36 +53,70 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void sendKey(String token, String name) {
+        HttpRequest request = new HttpRequest(this);
+        request.setOnReadyStateChangeListener(this);
+        request.setOnErrorListener(this);
+        request.open("POST", String.format("%skey", AppGlobals.BASE_URL));
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put(AppGlobals.KEY, token);
+            jsonObject.put("username", name);          // TODO: 22/04/2017 Set username accordingly
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        request.send(jsonObject.toString());
+        AppGlobals.showProgressDialog(MainActivity.this, "Please wait...");
+    }
+
+    @Override
+    public void onReadyStateChange(HttpRequest request, int readyState) {
+
+        switch (readyState) {
+            case HttpRequest.STATE_DONE:
+                AppGlobals.dismissProgressDialog();
+                switch (request.getStatus()) {
+                    case HttpURLConnection.HTTP_CREATED:
+                        AppGlobals.showSnackBar(findViewById(android.R.id.content),
+                                "Device Registered");
+                        Log.e("Created ", "Created  !");
+                }
+        }
+    }
+
+    @Override
+    public void onError(HttpRequest request, int readyState, short error, Exception exception) {
+
+    }
+
     private void showDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-//        builder.setIcon(android.R.drawable.ic_dialog_info);
+        final EditText nameField = new EditText(MainActivity.this);
         builder.setTitle("Welcome!");
         builder.setCancelable(false);
         builder.setMessage("Please provide your name");
         builder.setPositiveButton("OK",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface arg0, int arg1) {
-                        // DO TASK
+                        sendKey(AppGlobals.getStringFromSharedPreferences(
+                                AppGlobals.KEY_TOKEN), nameField.getText().toString());
                     }
                 });
-// Set `EditText` to `dialog`. You can add `EditText` from `xml` too.
-        final EditText input = new EditText(MainActivity.this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
-        input.setHint("Enter Your Name here...");
-        input.setLayoutParams(lp);
-        builder.setView(input);
+        nameField.setHint("Enter Your Name here...");
+        nameField.setLayoutParams(lp);
+        builder.setView(nameField);
         final AlertDialog dialog = builder.create();
         dialog.show();
-// Initially disable the button
-        ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE)
-                .setEnabled(false);
-// OR you can use here setOnShowListener to disable button at first
-// time.
 
-// Now set the textchange listener for edittext
-        input.addTextChangedListener(new TextWatcher() {
+        // Initially disable the button
+        (dialog).getButton(AlertDialog.BUTTON_POSITIVE)
+                .setEnabled(false);
+        // OR you can use here setOnShowListener to disable button at first time.
+
+        nameField.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
@@ -87,14 +128,12 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                // Check if edittext is empty
                 if (TextUtils.isEmpty(s)) {
-                    // Disable ok button
-                    ((AlertDialog) dialog).getButton(
+                    (dialog).getButton(
                             AlertDialog.BUTTON_POSITIVE).setEnabled(false);
                 } else {
                     // Something into edit text. Enable the button.
-                    ((AlertDialog) dialog).getButton(
+                    (dialog).getButton(
                             AlertDialog.BUTTON_POSITIVE).setEnabled(true);
                 }
 

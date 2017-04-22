@@ -1,8 +1,12 @@
 package com.byteshaft.smssender;
 
+import android.app.Activity;
 import android.app.Application;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.design.widget.Snackbar;
+import android.view.View;
 
 import com.google.firebase.FirebaseApp;
 
@@ -16,6 +20,8 @@ public class AppGlobals extends Application {
     public static final String KEY_FIRST_RUN = "first_run";
     private static final String SERVICE_KEY = "iServiceON";
 
+
+    private static ProgressDialog progressDialog;
     private static Context sContext;
 
     @Override
@@ -63,5 +69,28 @@ public class AppGlobals extends Application {
     public static boolean isServiceOn() {
         SharedPreferences sharedPreferences = getPreferenceManager();
         return sharedPreferences.getBoolean(SERVICE_KEY, false);
+    }
+
+    public static void showProgressDialog(Activity activity, String message) {
+        progressDialog = new ProgressDialog(activity);
+        progressDialog.setMessage(message);
+        progressDialog.setCancelable(false);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
+    }
+
+    public static void dismissProgressDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+
+    }
+
+    public static void showSnackBar(View view, String text) {
+        Snackbar.make(view, text, Snackbar.LENGTH_LONG)
+                .setActionTextColor(
+                        AppGlobals.getContext().getResources().getColor(android.R.color.holo_red_light))
+                .show();
     }
 }
