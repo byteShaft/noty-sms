@@ -27,12 +27,11 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Switch serviceSwitch = (Switch) findViewById(R.id.service_switch);
-        showDialog();
-//        if (AppGlobals.isRunningFirstTime()) {
-//            showDialog();
-//            AppGlobals.saveBoolean(false);
-//        }
+        final Switch serviceSwitch = (Switch) findViewById(R.id.service_switch);
+        if (AppGlobals.isRunningFirstTime()) {
+            showDialog();
+            AppGlobals.saveBoolean(false);
+        }
         if (AppGlobals.isServiceOn()) {
             serviceSwitch.setChecked(true);
         } else {
@@ -42,11 +41,13 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (b) {
-                    System.out.println("Service ON");
+                    serviceSwitch.setText("Service Enabled");
+                    serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
 
                 } else {
-                    System.out.println("Service off");
 
+                    serviceSwitch.setText("Service Disabled");
+                    serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
                 }
                 AppGlobals.saveState(b);
             }
@@ -61,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put(AppGlobals.KEY, token);
-            jsonObject.put("username", name);          // TODO: 22/04/2017 Set username accordingly
+            jsonObject.put("full_name", name);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -105,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
-        nameField.setHint("Enter Your Name here...");
+        nameField.setHint("Enter Your Full Name here...");
         nameField.setLayoutParams(lp);
         builder.setView(nameField);
         final AlertDialog dialog = builder.create();
