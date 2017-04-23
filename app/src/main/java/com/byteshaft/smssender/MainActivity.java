@@ -1,7 +1,13 @@
 package com.byteshaft.smssender;
 
+import android.Manifest;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -23,35 +29,70 @@ import java.net.HttpURLConnection;
 public class MainActivity extends AppCompatActivity implements
         HttpRequest.OnReadyStateChangeListener, HttpRequest.OnErrorListener {
 
+    private static final int SMS_PERMISSION = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         final Switch serviceSwitch = (Switch) findViewById(R.id.service_switch);
-        if (AppGlobals.isRunningFirstTime()) {
-            showDialog();
-            AppGlobals.saveBoolean(false);
-        }
-        if (AppGlobals.isServiceOn()) {
-            serviceSwitch.setChecked(true);
-        } else {
-            serviceSwitch.setChecked(false);
-        }
-        serviceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (b) {
-                    serviceSwitch.setText("Service Enabled");
-                    serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.SEND_SMS},
+                    SMS_PERMISSION);
 
+        } else {
+            if (AppGlobals.isRunningFirstTime()) {
+                showDialog();
+            }
+            if (AppGlobals.isServiceOn()) {
+                serviceSwitch.setChecked(true);
+            } else {
+                serviceSwitch.setChecked(false);
+            }
+            serviceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if (b) {
+                        serviceSwitch.setText("Service Enabled");
+                        serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+
+                    } else {
+
+                        serviceSwitch.setText("Service Disabled");
+                        serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                    }
+                    AppGlobals.saveState(b);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);switch (requestCode) {
+            case SMS_PERMISSION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Snackbar.make(findViewById(android.R.id.content), "permission granted!",
+                            Snackbar.LENGTH_SHORT).show();
+                    if (AppGlobals.isRunningFirstTime()) {
+                        showDialog();
+                    }
                 } else {
 
-                    serviceSwitch.setText("Service Disabled");
-                    serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
                 }
-                AppGlobals.saveState(b);
+                return;
             }
-        });
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 
     private void sendKey(String token, String name) {
@@ -81,6 +122,10 @@ public class MainActivity extends AppCompatActivity implements
                         AppGlobals.showSnackBar(findViewById(android.R.id.content),
                                 "Device Registered");
                         Log.e("Created ", "Created  !");
+                        break;
+                    case HttpURLConnection.HTTP_OK:
+                        Log.i("TAG", request.getResponseText());
+                        break;
                 }
         }
     }
@@ -101,6 +146,7 @@ public class MainActivity extends AppCompatActivity implements
                     public void onClick(DialogInterface arg0, int arg1) {
                         sendKey(AppGlobals.getStringFromSharedPreferences(
                                 AppGlobals.KEY_TOKEN), nameField.getText().toString());
+                        AppGlobals.saveBoolean(false);
                     }
                 });
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
