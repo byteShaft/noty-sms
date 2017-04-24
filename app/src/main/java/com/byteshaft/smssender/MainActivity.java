@@ -49,25 +49,32 @@ public class MainActivity extends AppCompatActivity implements
             }
             if (AppGlobals.isServiceOn()) {
                 serviceSwitch.setChecked(true);
+                serviceSwitch.setText("Service Enabled");
+                serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+
             } else {
                 serviceSwitch.setChecked(false);
+                serviceSwitch.setText("Service Disabled");
+                serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+
+
             }
-            serviceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    if (b) {
-                        serviceSwitch.setText("Service Enabled");
-                        serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-
-                    } else {
-
-                        serviceSwitch.setText("Service Disabled");
-                        serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-                    }
-                    AppGlobals.saveState(b);
-                }
-            });
         }
+        serviceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    serviceSwitch.setText("Service Enabled");
+                    serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+
+                } else {
+
+                    serviceSwitch.setText("Service Disabled");
+                    serviceSwitch.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                }
+                AppGlobals.saveState(b);
+            }
+        });
     }
 
     @Override
